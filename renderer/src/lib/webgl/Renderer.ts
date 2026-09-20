@@ -1,0 +1,59 @@
+import { VertexArray } from "./VertexArray";
+
+// Singleton
+export class Renderer {
+  public static instance: Renderer;
+  public gl: WebGL2RenderingContext;
+
+  private constructor(canvas: HTMLCanvasElement) {
+    const gl = canvas.getContext("webgl2");
+    if (!gl) {
+      throw new Error("Webgl2 Not Supported");
+    }
+
+    this.gl = gl;
+  }
+
+  public static getInstance(canvas?: HTMLCanvasElement): Renderer {
+    if (!Renderer.instance) {
+      if (!canvas) {
+        throw new Error(
+          "Canvas is required when creating the renderer for the first time",
+        );
+      }
+
+      Renderer.instance = new Renderer(canvas);
+    }
+
+    return Renderer.instance;
+  }
+  public drawArrays(vertexArray: VertexArray, vertexCount: number): void {
+    vertexArray.bind();
+
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount);
+  }
+
+  public clear(
+    r: number = 0,
+    g: number = 0,
+    b: number = 0,
+    a: number = 1,
+  ): void {
+    this.gl.clearColor(r, g, b, a);
+
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+  }
+
+  public enableDepthTest(): void {
+    this.gl.enable(this.gl.DEPTH_TEST);
+  }
+
+  public setViewport(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): void {
+    this.gl.viewport(x, y, width, height);
+  }
+}
