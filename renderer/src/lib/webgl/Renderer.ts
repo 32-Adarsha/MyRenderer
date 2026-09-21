@@ -1,3 +1,5 @@
+import { IndexBuffer } from "./IndexBuffer";
+import { PrimitiveType } from "./PrimitiveType";
 import { VertexArray } from "./VertexArray";
 
 // Singleton
@@ -55,5 +57,33 @@ export class Renderer {
     height: number,
   ): void {
     this.gl.viewport(x, y, width, height);
+  }
+
+  private getPrimitivesType(type: PrimitiveType): number {
+    switch (type) {
+      case PrimitiveType.Triangles:
+        return this.gl.TRIANGLES;
+      case PrimitiveType.Lines:
+        return this.gl.LINES;
+      case PrimitiveType.LineStritp:
+        return this.gl.LINE_STRIP;
+      case PrimitiveType.Points:
+        return this.gl.POINTS;
+      default:
+        throw new Error("Unsuppoprted Primitive Type");
+    }
+  }
+
+  public drawElements(
+    vertexArray: VertexArray,
+    primitive: PrimitiveType = PrimitiveType.Triangles,
+  ): void {
+    vertexArray.bind();
+    this.gl.drawElements(
+      this.getPrimitivesType(primitive),
+      vertexArray.getIndexCount(),
+      vertexArray.getIndexType(),
+      0,
+    );
   }
 }

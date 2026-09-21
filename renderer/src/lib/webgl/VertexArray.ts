@@ -1,15 +1,13 @@
 import { Renderer } from "./Renderer";
 import { VertexBuffer } from "./VertexBuffer";
 import type { VertexLayout } from "./VertexLayout";
-
-export interface VertexAttribute {
-  location: number;
-  size: number;
-}
+import { IndexBuffer } from "./IndexBuffer";
 
 export class VertexArray {
   private gl: WebGL2RenderingContext;
   private vao: WebGLVertexArrayObject;
+  private indexCount: number = 0;
+  private indexType: number = 0;
 
   constructor() {
     this.gl = Renderer.getInstance().gl;
@@ -53,5 +51,21 @@ export class VertexArray {
     }
 
     this.unbind();
+  }
+
+  public setIndexBuffer(indexBuffer: IndexBuffer) {
+    this.bind();
+    indexBuffer.bind();
+    this.indexCount = indexBuffer.count;
+    this.indexType = indexBuffer.type;
+    this.unbind();
+  }
+
+  public getIndexCount(): number {
+    return this.indexCount;
+  }
+
+  public getIndexType(): number {
+    return this.indexType;
   }
 }
