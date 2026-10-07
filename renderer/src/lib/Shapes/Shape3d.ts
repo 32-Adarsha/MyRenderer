@@ -57,7 +57,6 @@ export class Shape3d {
     };
   }
 
-  // CUBE
   public static Cube(
     width: number,
     height: number = width,
@@ -68,52 +67,44 @@ export class Shape3d {
     const d = depth / 2;
 
     const vertices = new Float32Array([
-      // front
       -w,
       -h,
-      d, // 0
+      d,
       w,
       -h,
-      d, // 1
+      d,
       w,
       h,
-      d, // 2
+      d,
       -w,
       h,
-      d, // 3
+      d,
 
-      // back
       -w,
       -h,
-      -d, // 4
+      -d,
       w,
       -h,
-      -d, // 5
+      -d,
       w,
       h,
-      -d, // 6
+      -d,
       -w,
       h,
-      -d, // 7
+      -d,
     ]);
 
     const indices = new Uint16Array([
-      // front
       0, 1, 2, 0, 2, 3,
 
-      // back
       5, 4, 7, 5, 7, 6,
 
-      // left
       4, 0, 3, 4, 3, 7,
 
-      // right
       1, 5, 6, 1, 6, 2,
 
-      // top
       3, 2, 6, 3, 6, 7,
 
-      // bottom
       4, 5, 1, 4, 1, 0,
     ]);
 
@@ -288,10 +279,6 @@ export class Shape3d {
     const vertices: number[] = [];
     const indices: number[] = [];
 
-    // -----------------------------------------
-    // Generate vertices
-    // -----------------------------------------
-
     for (let y = 0; y <= segmentY; y++) {
       const v = (y / segmentY) * Math.PI * 2;
 
@@ -307,8 +294,6 @@ export class Shape3d {
         vertices.push(px, py, pz);
       }
     }
-
-    // Generate triangles
 
     for (let y = 0; y < segmentY; y++) {
       for (let x = 0; x < segmentX; x++) {

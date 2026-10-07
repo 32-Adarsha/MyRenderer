@@ -2,7 +2,6 @@ import { IndexBuffer } from "./IndexBuffer";
 import { PrimitiveType } from "./PrimitiveType";
 import { VertexArray } from "./VertexArray";
 
-// Singleton
 export class Renderer {
   public static instance: Renderer;
   public gl: WebGL2RenderingContext;
@@ -33,6 +32,7 @@ export class Renderer {
     vertexArray.bind();
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount);
+    vertexArray.unbind();
   }
 
   public clear(
@@ -85,5 +85,6 @@ export class Renderer {
       vertexArray.getIndexType(),
       0,
     );
+    vertexArray.unbind();
   }
 }
