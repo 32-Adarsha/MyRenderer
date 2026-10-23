@@ -65,13 +65,13 @@ export class Shader {
   }
 
   public setFloat(name: string, value: number): void {
-    const location = this.gl.getUniformLocation(this.program, name);
-
-    if (location === null) {
-      throw new Error(`Uniform ${name} not found`);
-    }
-
+    const location = this.getUniformLocation(name);
     this.gl.uniform1f(location, value);
+  }
+
+  public setInt(name: string, value: number): void {
+    const location = this.getUniformLocation(name);
+    this.gl.uniform1i(location, value);
   }
 
   private getUniformLocation(name: string): WebGLUniformLocation {

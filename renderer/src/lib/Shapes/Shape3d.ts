@@ -28,22 +28,22 @@ export class Shape3d {
         const u = x / segmentX;
         const theta = u * Math.PI * 2;
 
-        const px = radius * Math.sin(phi) * Math.cos(theta);
+        const nx = Math.sin(phi) * Math.cos(theta);
+        const ny = Math.cos(phi);
+        const nz = Math.sin(phi) * Math.sin(theta);
 
-        const py = radius * Math.cos(phi);
+        const px = radius * nx;
+        const py = radius * ny;
+        const pz = radius * nz;
 
-        const pz = radius * Math.sin(phi) * Math.sin(theta);
-
-        vertices.push(px, py, pz);
+        vertices.push(px, py, pz, nx, ny, nz);
       }
     }
 
     for (let y = 0; y < segmentY; y++) {
       for (let x = 0; x < segmentX; x++) {
         const a = y * (segmentX + 1) + x;
-
         const b = a + segmentX + 1;
-
         const c = b + 1;
         const d = a + 1;
 
@@ -67,45 +67,44 @@ export class Shape3d {
     const d = depth / 2;
 
     const vertices = new Float32Array([
-      -w,
-      -h,
-      d,
-      w,
-      -h,
-      d,
-      w,
-      h,
-      d,
-      -w,
-      h,
-      d,
+      -w, -h,  d,   0,  0,  1,
+       w, -h,  d,   0,  0,  1,
+       w,  h,  d,   0,  0,  1,
+      -w,  h,  d,   0,  0,  1,
 
-      -w,
-      -h,
-      -d,
-      w,
-      -h,
-      -d,
-      w,
-      h,
-      -d,
-      -w,
-      h,
-      -d,
+      -w, -h, -d,   0,  0, -1,
+       w, -h, -d,   0,  0, -1,
+       w,  h, -d,   0,  0, -1,
+      -w,  h, -d,   0,  0, -1,
+
+      -w, -h, -d,  -1,  0,  0,
+      -w, -h,  d,  -1,  0,  0,
+      -w,  h,  d,  -1,  0,  0,
+      -w,  h, -d,  -1,  0,  0,
+
+       w, -h,  d,   1,  0,  0,
+       w, -h, -d,   1,  0,  0,
+       w,  h, -d,   1,  0,  0,
+       w,  h,  d,   1,  0,  0,
+
+      -w,  h,  d,   0,  1,  0,
+       w,  h,  d,   0,  1,  0,
+       w,  h, -d,   0,  1,  0,
+      -w,  h, -d,   0,  1,  0,
+
+      -w, -h, -d,   0, -1,  0,
+       w, -h, -d,   0, -1,  0,
+       w, -h,  d,   0, -1,  0,
+      -w, -h,  d,   0, -1,  0,
     ]);
 
     const indices = new Uint16Array([
-      0, 1, 2, 0, 2, 3,
-
-      5, 4, 7, 5, 7, 6,
-
-      4, 0, 3, 4, 3, 7,
-
-      1, 5, 6, 1, 6, 2,
-
-      3, 2, 6, 3, 6, 7,
-
-      4, 5, 1, 4, 1, 0,
+       0,  1,  2,   0,  2,  3,
+       4,  6,  5,   4,  7,  6,
+       8,  9, 10,   8, 10, 11,
+      12, 13, 14,  12, 14, 15,
+      16, 17, 18,  16, 18, 19,
+      20, 21, 22,  20, 22, 23,
     ]);
 
     return {
@@ -130,79 +129,73 @@ export class Shape3d {
 
     for (let i = 0; i <= segments; i++) {
       const angle = (i / segments) * Math.PI * 2;
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
 
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
+      const x = cosA * radius;
+      const z = sinA * radius;
 
-      vertices.push(x, -halfHeight, z);
-
-      vertices.push(x, halfHeight, z);
+      vertices.push(x, -halfHeight, z, cosA, 0, sinA);
+      vertices.push(x, halfHeight, z, cosA, 0, sinA);
     }
 
     for (let i = 0; i < segments; i++) {
       const bottomLeft = i * 2;
       const topLeft = bottomLeft + 1;
-
       const bottomRight = bottomLeft + 2;
-
       const topRight = bottomLeft + 3;
 
       indices.push(
         bottomLeft,
         bottomRight,
         topLeft,
-
         topLeft,
         bottomRight,
         topRight,
       );
     }
 
-    const bottomCenter = vertices.length / 3;
+    const bottomCenter = vertices.length / 6;
+    vertices.push(0, -halfHeight, 0, 0, -1, 0);
 
-    vertices.push(0, -halfHeight, 0);
-
-    const bottomStart = vertices.length / 3;
-
+    const bottomStart = vertices.length / 6;
     for (let i = 0; i < segments; i++) {
       const angle = (i / segments) * Math.PI * 2;
-
       vertices.push(
         Math.cos(angle) * radius,
         -halfHeight,
         Math.sin(angle) * radius,
+        0,
+        -1,
+        0,
       );
     }
 
     for (let i = 0; i < segments; i++) {
       const current = bottomStart + i;
-
       const next = bottomStart + ((i + 1) % segments);
-
       indices.push(bottomCenter, next, current);
     }
 
-    const topCenter = vertices.length / 3;
+    const topCenter = vertices.length / 6;
+    vertices.push(0, halfHeight, 0, 0, 1, 0);
 
-    vertices.push(0, halfHeight, 0);
-
-    const topStart = vertices.length / 3;
-
+    const topStart = vertices.length / 6;
     for (let i = 0; i < segments; i++) {
       const angle = (i / segments) * Math.PI * 2;
-
       vertices.push(
         Math.cos(angle) * radius,
         halfHeight,
         Math.sin(angle) * radius,
+        0,
+        1,
+        0,
       );
     }
 
     for (let i = 0; i < segments; i++) {
       const current = topStart + i;
-
       const next = topStart + ((i + 1) % segments);
-
       indices.push(topCenter, current, next);
     }
 
@@ -225,38 +218,48 @@ export class Shape3d {
     const indices: number[] = [];
 
     const halfHeight = height / 2;
-
-    vertices.push(0, halfHeight, 0);
+    const slope = radius / height;
 
     const tip = 0;
+    vertices.push(0, halfHeight, 0, 0, 1, 0);
 
     for (let i = 0; i < segments; i++) {
       const angle = (i / segments) * Math.PI * 2;
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
 
-      const x = Math.cos(angle) * radius;
+      const x = cosA * radius;
+      const z = sinA * radius;
 
-      const z = Math.sin(angle) * radius;
-
-      vertices.push(x, -halfHeight, z);
+      const nLen = Math.hypot(cosA, slope, sinA);
+      vertices.push(x, -halfHeight, z, cosA / nLen, slope / nLen, sinA / nLen);
     }
 
     for (let i = 0; i < segments; i++) {
       const current = i + 1;
-
       const next = ((i + 1) % segments) + 1;
-
       indices.push(tip, current, next);
     }
 
-    const center = vertices.length / 3;
-
-    vertices.push(0, -halfHeight, 0);
+    const center = vertices.length / 6;
+    vertices.push(0, -halfHeight, 0, 0, -1, 0);
 
     for (let i = 0; i < segments; i++) {
-      const current = i + 1;
+      const angle = (i / segments) * Math.PI * 2;
+      vertices.push(
+        Math.cos(angle) * radius,
+        -halfHeight,
+        Math.sin(angle) * radius,
+        0,
+        -1,
+        0,
+      );
+    }
 
-      const next = ((i + 1) % segments) + 1;
-
+    const baseStart = center + 1;
+    for (let i = 0; i < segments; i++) {
+      const current = baseStart + i;
+      const next = baseStart + ((i + 1) % segments);
       indices.push(center, next, current);
     }
 
@@ -281,28 +284,31 @@ export class Shape3d {
 
     for (let y = 0; y <= segmentY; y++) {
       const v = (y / segmentY) * Math.PI * 2;
+      const cosV = Math.cos(v);
+      const sinV = Math.sin(v);
 
       for (let x = 0; x <= segmentX; x++) {
         const u = (x / segmentX) * Math.PI * 2;
+        const cosU = Math.cos(u);
+        const sinU = Math.sin(u);
 
-        const px = (radius + tubeRadius * Math.cos(v)) * Math.cos(u);
+        const px = (radius + tubeRadius * cosV) * cosU;
+        const py = tubeRadius * sinV;
+        const pz = (radius + tubeRadius * cosV) * sinU;
 
-        const py = tubeRadius * Math.sin(v);
+        const nx = cosV * cosU;
+        const ny = sinV;
+        const nz = cosV * sinU;
 
-        const pz = (radius + tubeRadius * Math.cos(v)) * Math.sin(u);
-
-        vertices.push(px, py, pz);
+        vertices.push(px, py, pz, nx, ny, nz);
       }
     }
 
     for (let y = 0; y < segmentY; y++) {
       for (let x = 0; x < segmentX; x++) {
         const a = y * (segmentX + 1) + x;
-
         const b = a + segmentX + 1;
-
         const c = b + 1;
-
         const d = a + 1;
 
         indices.push(a, b, d, b, c, d);
