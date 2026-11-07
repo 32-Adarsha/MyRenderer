@@ -26,3 +26,4 @@ export { VertexArray } from "./webgl/VertexArray";
 export { VertexLayout } from "./webgl/VertexLayout";
 export type { VertexAttribute } from "./webgl/VertexLayout";
 export { PrimitiveType } from "./webgl/PrimitiveType";
+export { Texture, TextureWrapping } from "./webgl/Texture";

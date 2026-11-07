@@ -10,12 +10,15 @@ import type { Shader } from "../webgl/Shader";
 
 export interface MeshGeometry {
   vertices: Float32Array;
-  indices: Uint16Array;
+  indices: Uint16Array | Uint32Array;
+  hasUV?: boolean;
 }
 
 export class Mesh extends Object {
   public geometry: MeshGeometry;
   public material: Material;
+  public normalStrength: number = 1.0;
+  public bumpStrength: number = 1.0;
 
   private vertexArray: VertexArray | null = null;
   private vertexBuffer: VertexBuffer | null = null;
@@ -46,10 +49,18 @@ export class Mesh extends Object {
   public setupBuffers(layout?: VertexLayout): VertexArray {
     const activeLayout =
       layout ??
-      new VertexLayout([
-        { location: 0, size: 3 },
-        { location: 1, size: 3 },
-      ]);
+      new VertexLayout(
+        this.geometry.hasUV
+          ? [
+              { location: 0, size: 3 },
+              { location: 1, size: 3 },
+              { location: 2, size: 2 },
+            ]
+          : [
+              { location: 0, size: 3 },
+              { location: 1, size: 3 },
+            ],
+      );
 
     if (!this.vertexBuffer) {
       this.vertexBuffer = new VertexBuffer();
@@ -105,10 +116,76 @@ export class Mesh extends Object {
     }
     if (shader) {
       shader.setMat4("uModel", this.getWorldMatrix());
-      shader.setVec3("uKd", this.material.kd[0], this.material.kd[1], this.material.kd[2]);
-      shader.setVec3("uKa", this.material.ka[0], this.material.ka[1], this.material.ka[2]);
-      shader.setVec3("uKs", this.material.ks[0], this.material.ks[1], this.material.ks[2]);
+      shader.setVec3(
+        "uKd",
+        this.material.kd[0],
+        this.material.kd[1],
+        this.material.kd[2],
+      );
+      shader.setVec3(
+        "uKa",
+        this.material.ka[0],
+        this.material.ka[1],
+        this.material.ka[2],
+      );
+      shader.setVec3(
+        "uKs",
+        this.material.ks[0],
+        this.material.ks[1],
+        this.material.ks[2],
+      );
       shader.setFloat("uShininess", this.material.shininess);
+      shader.setInt("uIsPlane", this.name === "GroundPlane" ? 1 : 0);
+      shader.setFloat("uNormalStrength", this.normalStrength);
+      shader.setFloat("uBumpStrength", this.bumpStrength);
+
+      if (this.material.map) {
+        this.material.map.bind(0);
+        shader.setInt("uHasTexture", 1);
+        shader.setInt("uTexture", 0);
+      } else {
+        shader.setInt("uHasTexture", 0);
+      }
+
+      if (this.material.normalMap) {
+        this.material.normalMap.bind(1);
+        shader.setInt("uHasNormalMap", 1);
+        shader.setInt("uNormalMap", 1);
+      } else {
+        shader.setInt("uHasNormalMap", 0);
+      }
+
+      if (this.material.roughnessMap) {
+        this.material.roughnessMap.bind(2);
+        shader.setInt("uHasRoughnessMap", 1);
+        shader.setInt("uRoughnessMap", 2);
+      } else {
+        shader.setInt("uHasRoughnessMap", 0);
+      }
+
+      if (this.material.bumpMap) {
+        this.material.bumpMap.bind(3);
+        shader.setInt("uHasBumpMap", 1);
+        shader.setInt("uBumpMap", 3);
+      } else {
+        shader.setInt("uHasBumpMap", 0);
+      }
+
+      if (this.material.aoMap) {
+        this.material.aoMap.bind(4);
+        shader.setInt("uHasAoMap", 1);
+        shader.setInt("uAoMap", 4);
+      } else {
+        shader.setInt("uHasAoMap", 0);
+      }
+
+      if (this.material.metallicMap) {
+        this.material.metallicMap.bind(5);
+        shader.setInt("uHasMetallicMap", 1);
+        shader.setInt("uMetallicMap", 5);
+      } else {
+        shader.setInt("uHasMetallicMap", 0);
+      }
     }
     const va = this.getVertexArray(layout);
     renderer.drawElements(va, primitive);

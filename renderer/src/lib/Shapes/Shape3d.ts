@@ -1,6 +1,6 @@
 export interface Shape3dData {
   vertices: Float32Array;
-  indices: Uint16Array;
+  indices: Uint16Array | Uint32Array;
 }
 
 export class Shape3d {
@@ -318,6 +318,50 @@ export class Shape3d {
     return {
       vertices: new Float32Array(vertices),
       indices: new Uint16Array(indices),
+    };
+  }
+
+  public static Plane(
+    width: number = 8.0,
+    depth: number = 8.0,
+    subdivisionsX: number = 10,
+    subdivisionsZ: number = 10,
+  ): Shape3dData {
+    const vertices: number[] = [];
+    const indices: number[] = [];
+    const halfW = width / 2;
+    const halfD = depth / 2;
+
+    for (let z = 0; z <= subdivisionsZ; z++) {
+      const v = z / subdivisionsZ;
+      const pz = -halfD + v * depth;
+
+      for (let x = 0; x <= subdivisionsX; x++) {
+        const u = x / subdivisionsX;
+        const px = -halfW + u * width;
+
+        vertices.push(px, 0.0, pz, 0.0, 1.0, 0.0, u, v);
+      }
+    }
+
+    for (let z = 0; z < subdivisionsZ; z++) {
+      for (let x = 0; x < subdivisionsX; x++) {
+        const row1 = z * (subdivisionsX + 1);
+        const row2 = (z + 1) * (subdivisionsX + 1);
+
+        const a = row1 + x;
+        const b = row2 + x;
+        const c = row2 + x + 1;
+        const d = row1 + x + 1;
+
+        indices.push(a, d, b, b, d, c);
+      }
+    }
+
+    const totalVertices = (subdivisionsX + 1) * (subdivisionsZ + 1);
+    return {
+      vertices: new Float32Array(vertices),
+      indices: totalVertices > 65535 ? new Uint32Array(indices) : new Uint16Array(indices),
     };
   }
 }

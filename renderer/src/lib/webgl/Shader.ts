@@ -1,4 +1,5 @@
 import { Renderer } from "./Renderer";
+import type { Texture } from "./Texture";
 
 export class Shader {
   private gl: WebGL2RenderingContext;
@@ -66,37 +67,37 @@ export class Shader {
 
   public setFloat(name: string, value: number): void {
     const location = this.getUniformLocation(name);
+    if (!location) return;
     this.gl.uniform1f(location, value);
   }
 
   public setInt(name: string, value: number): void {
     const location = this.getUniformLocation(name);
+    if (!location) return;
     this.gl.uniform1i(location, value);
   }
 
-  private getUniformLocation(name: string): WebGLUniformLocation {
-    const cached = this.uniformLocation.get(name);
-
-    if (cached) {
-      return cached;
+  private getUniformLocation(name: string): WebGLUniformLocation | null {
+    if (this.uniformLocation.has(name)) {
+      return this.uniformLocation.get(name) ?? null;
     }
 
     const location = this.gl.getUniformLocation(this.program, name);
-    if (location === null) {
-      throw new Error(`Uniform ${name} not found`);
+    if (location) {
+      this.uniformLocation.set(name, location);
     }
-
-    this.uniformLocation.set(name, location);
     return location;
   }
 
   public setVec2(name: string, x: number, y: number): void {
     const location = this.getUniformLocation(name);
+    if (!location) return;
     this.gl.uniform2f(location, x, y);
   }
 
   public setVec3(name: string, x: number, y: number, z: number): void {
     const location = this.getUniformLocation(name);
+    if (!location) return;
     this.gl.uniform3f(location, x, y, z);
   }
 
@@ -108,11 +109,18 @@ export class Shader {
     w: number,
   ): void {
     const location = this.getUniformLocation(name);
+    if (!location) return;
     this.gl.uniform4f(location, x, y, z, w);
   }
 
   public setMat4(name: string, value: Float32Array): void {
     const location = this.getUniformLocation(name);
+    if (!location) return;
     this.gl.uniformMatrix4fv(location, false, value);
+  }
+
+  public setTexture(name: string, texture: Texture, unit: number = 0): void {
+    texture.bind(unit);
+    this.setInt(name, unit);
   }
 }

@@ -8,6 +8,7 @@ export class Object {
   public visible: boolean = true;
   public alpha: number = 1.0;
   public zIndex: number = 0;
+  public name: string = "";
 
   public parent: Object | null = null;
   public children: Object[] = [];
